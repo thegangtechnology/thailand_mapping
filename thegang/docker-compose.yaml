@@ -1,0 +1,52 @@
+version: "3.8"
+#  Move the docker-compose to the root
+
+services:
+  postgres:
+    image: "postgres:14"
+    ports:
+      - "5866:5432"
+    user: postgres
+    environment:
+      POSTGRES_DB: "db"
+      POSTGRES_PASSWORD: "postgres"
+    networks:
+      - database-network
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  web:
+    build:
+      context: .
+      dockerfile: thegang/Dockerfile
+      target: dev
+    restart: always
+    ports:
+      - "13423:80"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./:/go/app:rw,delegated
+    networks:
+      - database-network
+    environment:
+      APP_ENV: "docker" # docker for dev, production for staging
+      API_PORT: "80"
+      LOG_LEVEL: "debug"
+      DB_DSN: "host=postgres user=postgres password=postgres dbname=db port=5432 sslmode=disable TimeZone=Asia/Bangkok"
+
+      JWT_VERIFY: "false"
+      JWT_URL: ""
+
+networks:
+  database-network:
+    driver: bridge
+
+volumes:
+  pgdata:
+    driver: local

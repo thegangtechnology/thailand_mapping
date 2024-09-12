@@ -1,0 +1,6 @@
+output:
+  generated.gen.go
+package: generated
+generate:
+  - types
+  - spec

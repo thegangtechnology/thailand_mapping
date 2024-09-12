@@ -1,0 +1,118 @@
+openapi: 3.0.3
+info:
+  version: 0.0.0
+  title: Backend
+  description: APIs and Models in Backend for go-template
+paths:
+  /health:
+    get:
+      tags:
+        - basic
+      security: [ ]
+      operationId: health_check
+      summary: Default page
+      responses:
+        200:
+          description: No response body
+  /version:
+    get:
+      tags:
+        - basic
+      security: [ ]
+      operationId: version
+      summary: Get application version
+      responses:
+        '200':
+          description: Application git commit hash
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: latest
+  /reports:
+    get:
+      summary: Get a page of reports
+      tags:
+        - reports
+      parameters:
+        - name: name
+          in: query
+          description: the report name to filter
+          required: false
+          schema:
+            type: string
+      responses:
+        200:
+          description: paginated reports
+    post:
+      summary: Create a report
+      tags:
+        - reports
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateReportInput"
+      responses:
+        200:
+          description: paginated reports
+        500:
+          description: paginated reports
+  /reports/{id}:
+    get:
+      tags:
+        - reports
+      summary: Get a report from ID
+      parameters:
+        - name: id
+          in: query
+          schema:
+            type: integer
+            format: uint
+      responses:
+        200:
+          description: report is found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Report'
+components:
+  schemas:
+    CreateReportInput:
+      properties:
+        description:
+          type: string
+        productID:
+          type: integer
+          format: uint
+    Report:
+      allOf:
+        - $ref: '#/components/schemas/BaseModel'
+        - properties:
+            description:
+              type: string
+            productID:
+              type: integer
+              format: uint
+
+    # Basic Object
+    BaseModel:
+      properties:
+        ID:
+          type: integer
+          format: uint
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    StsKeyAuth:
+      type: apiKey
+      in: header
+      name: x-sts-key
+
+security:
+  - StsKeyAuth: [ ]
+  - BearerAuth: [ ]
